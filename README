@@ -1,0 +1,45 @@
+Davinci DRM zip Beta v0.1 - Ryan O'Neill <elfmaster@zoho.com> 2014
+
+About:
+Davinci DRM zip allows one to protect any type of file with a self decrypting
+stub. The stub has basic anti-debugging/anti-tamper techniques built into it, although
+quite minimally as this version is a POC. It takes an input file, and then generates
+an ELF executable as the output file. This executable can be ran to decrypt the data
+and write it to stdout. This can be done with our without password protection. Davinci
+will also use UPX to compress the output executable, as they are very large (8MB) since
+the stub has 8MB of room in its data segment to store data. In later versions this may
+be fixed to generate a stub dynamically that has no more or less room that it needs
+to store the data. Currently there is a limit of about 8MB of data it can protect.
+
+Files:
+davinci.c <-> The src code for generating a Davinci DRM zip archive (.ddz file)
+stub.c <-> The src code for the template executable that is injected
+stub_shellcode.h <-> The shellcode for the compiled stub.c executable
+utils/gen_shellcode.c <-> A program that generates a new stub_shellcode.h file (Output file is called shellcode though)
+utils/stripx.c <-> A program that strips the section header table from the .ddz file.
+
+Compile:
+make
+
+Usage:
+./davinci <infile> <outfile> <key> [-r]
+
+If the -r option is used, then the output file can only be executed if the key/password is supplied by 
+the user. This of course is how Davinci is used properly, otherwise anyone can execute and therefore
+decrypt the data.
+
+Example:
+
+ryan@elfmaster:~/dev/davinci$ ./davinci msg.txt msg.elf fuckoff -r
+payload_meta_t is 0x800110 bytes
+[+] The user who executes msg.elf must supply password: fuckoff
+[+] Encoding payload data
+[+] Encoding payload struct
+[+] Building msg program
+[+] /usr/bin/upx exists, so using it to compress msg.elf
+Packed 1 file.
+Successfully created msg.elf
+ryan@elfmaster:~/dev/davinci$ ./msg.elf fuckoff
+Hello how are you?
+
+
